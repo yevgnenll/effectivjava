@@ -520,7 +520,13 @@ public static void main(String[] args){
 참조에 사용할 수 있는 자료형이면 다 된다.
 
 단 `Stack<int>`나 `Stack<double>`과 같이 사용하면 compile 도중 오류가 난다.
-이것의 대응 방안으로
+이것의 대응 방안으로 boxed primitive type을 사용해아 한다.
+
+
+-----------------
+
+
+형인자를 제한하는 generic 자료형도 있다.
 
 ```
 class DelayQueue<E extends Delayed> implements BlockingQueue<E>;
@@ -597,7 +603,7 @@ public static <K, V> HashMap<K, V> newHashMap(){
 Map<String, List<String>> anagrams = newHashMap();
 ```
 
->   java 1.7 부터는 추론이 가능하다 chapter 2에서 언급한적 있음
+>   java 1.7 부터는 추론이 가능하다 고로 위 코드는 지나가도 좋다
 
 이것에 관련된 **generic singleton pattern**이 있다. (chapter 2에서 static
 factory method에 연관짓는것이 singleton pattern이다)
@@ -1238,7 +1244,3 @@ for(Herb b : garden)
 
 
 
-
- 
-
- 
