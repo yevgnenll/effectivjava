@@ -1,0 +1,11 @@
+*.class
+*.ctxt
+
+.mtj.tmp/
+*.jar
+*.war
+*.ear
+out/
+.idea/
+
+hs_err_pid*
