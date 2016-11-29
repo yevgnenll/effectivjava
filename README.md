@@ -122,18 +122,20 @@ stamps collectioon에 실수로 coin 객체를 넣었다.
 ```
 for(Iterator i = stamps.iterator(); i.hasNext();){
     Stamp s = (Stapm) i.next();
+    // classCastException 예외 발생
 }
 ```
 
 effective java에서 error는 가능한 빨리 발견해야 하며, compile할때 발견하는게
-이상적이다. 그러나 위 예제 코드는 프로그램 실행중에 발생된다. 그것도 관련없는
+이상적이다. 그러나 위 예제 코드는 프로그램 **실행중**에 발생된다. 그것도 관련없는
 곳에서 에러가 발생하여 찾는데 시간이 걸린다.
 
 ```
+
 private final Collection<Stamps> statpms = ...;
 ```
 
-이 선언에서 stamps 변수안엔 오로지 Stapm 객체만 삽입되도록 표현한다. 게다가
+이 선언에서 stamps 변수안엔 **오로지 Stapm 객체**만 삽입되도록 표현한다. 게다가
 collection 자료형을 사용하면 원소를 꺼낼때 **형변환**을 하지 않아도 된다.
 
 generic에 무인자 자료형을 사용하면 type 안전성이 사라지고, generic의 장점인
@@ -141,10 +143,11 @@ generic에 무인자 자료형을 사용하면 type 안전성이 사라지고, g
 
 무인자 자료형을 지원하는 이유는 **호환성** 때문이다.
 
-##### List와 List< Object> 차이
+
+##### List(무인자)와 List< Object> 차이
 
 
-`List`는 type을 체크하는 철자를 철저히 생략한 것이고, `List<Object>`는 아무
+`List`는 type을 **체크**하는 철자를 철저히 **생략**한 것이고, `List<Object>`는 아무
 type이나 가능함을 compiler에게 알려주는것이다.
 
 **따라서 `List`와 같이 무인자 자료형을 사용하면 형 안정성을 잃지만,`List<Object>`와 같은 형인자 자료형을 사용하면 그렇지 않다.**
@@ -366,9 +369,6 @@ import java.util.EmptyStackException;
 
 import sun.misc.Cleaner;
 
-/**
- * Created by yevgnen on 2016-11-22.
- */
 public class Stack<E> {
   private E[] elements; // ?
   private int size = 0;
@@ -1140,7 +1140,7 @@ EnumSet에는 static factory meethod가 다양하게 있어서 편하게 객체�
 text.applyStyles(EnumSet.of(Style.BOLD, Style.ITALIC);
 ```
 
-여기서 주의할것은 `applyStyles`의 매개변수가 Set<Style> 이다.
+여기서 주의할것은 `applyStyles`의 매개변수가 Set< Style> 이다.
 EnumSet을 인자로 이용할 것 같지만, interface 자료형으로 사용해야 EnumSet 이 아닌
 Set을 인자로 전달하여도 처리할 수 있다.
 
