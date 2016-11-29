@@ -168,7 +168,10 @@ static int numElementsInCommon(Set< ?> s1, Set< ?> s2){
 
 Collection< ?> 에는 `null` 이외의 어떤 원소도 넣을 수 없다. 어떤 객체를 넣는지 알 방법이 없다
 
-##### 그럼 언제 무인자 자료형을 사용할 수 있을까?
+컬렉션의 자료형 **불변식**이 **위반**되지 않도록 compiler가 실행된다
+
+
+##### 그럼 언제 무인자 자료형을 사용할 수 있을까?(예외)
 
 1.  class literal 에는 무인자 자료형을 사용한다.
 
@@ -192,26 +195,28 @@ if(o instanceof Set){
 | 실 형인자(actual type parameter)                    | String                   | 23     |
 | 제너릭 자료형(generic type)                         | List                     | 23, 26 |
 | 형식 형인자(formal type parameter)                  | E                        | 23     |
-| 비한정적 와일드카드 자료형(unbounded wildcard type) | List< ?>                | 23     |
+| 비한정적 와일드카드 자료형(unbounded wildcard type)   | List< ?>                | 23     |
 | 무인자 자료형(raw type)                             | List                     | 12     |
-| 한정적 형인자(bounded type parameter)               |                          | 26     |
+| 한정적 형인자(bounded type parameter)               | < T extends Comparable< T>>| 26     |
 | 한정적 와일드카드 자료형(bounded wildcard type)     | List< ? extends Number> | 28     |
 | 제너릭 메서드(generic method)                       | static  List asList      | 27     |
 | 자료형 토큰(type token)                             | String.class             | 29     |
 
 무인자 자료형을 최대한 줄이고 generic< ?> 를 명시해 사용하자
 
+
+----------------
+
+
 ### Rule No.24 무점검 경고(unchecked warning)를 제거
 
-generic으로 코드를 만들다보면 compiler 경고 메세지를 보게된다.
+
+generic으로 코드를 만들다보면 **많은** compiler 경고 메세지를 보게된다.
 
 1.  무점검 형변환 경고(unchecked cast warning)
-
 2.  무점검 메서드 호출 경고(unchecked method invocation warning)
-
 3.  무점검 제너릭 배열 생성 경고(unchecked conversion warning)
 
-generic을 사용해 새로 만든 코드가 한번에 깔끔해질리는 없다.
 
 그 중 unchecked warning은 대부분 쉽게 없앨 수 있다.
 
@@ -234,24 +239,23 @@ Set<Lark> exaltation = new HashSet<Lark>();
 ```
 
 이것보다 수정하기 더 어려운 코드도 많다. 모든 무점검 경고는, 가능하다면
-없애야한다. 없애고 나면 typesafe(코드의 형 안정성)이 보장된다.
+없애야한다. 없애고 나면 typesafe(코드의 형 안정성)이 **보장**된다.
+
 
 제거할 수 없는 경고 메세지는 형 안정성이 확실할 때만
 @SupressWarnings("unchecked") annotation을 사용해 억제해야 한다.
-`SuppressWarnings` annotation은 개별 지역 변수부터 클래스까지 어떤 단위에도
-적요이 가능하다.
+`SuppressWarnings` annotation은 개별 지역 변수부터 클래스까지 어떤 단위에도 적용이 가능하다.
 
-하지만 가능한 **작은 범위**에만 적용하라. 보통은 **변수, 짦은 method,
-constructor**에만 붙인다.
+- 작은 범위
+- 짧은 method
+- constructo
+- 선언문에서만 사용이 가능(return x)
 
-`SuppressWarnings`는 `return`에 넣을 수 없다. 선언문에만 사용이 가능하기
-때문이다. 따라서 함수안의 변수에 `SuppressWarnings` annotation을 사용하려면
-아래와 같이 사용해야 한다.
 
 ```
 public <T> T[] toArray(T[] a){
     if(a.length < size){
-        @SuppressWarnings("unchecked") 
+        @SuppressWarnings("unchecked")
         T[] result = (T[]) Arrays.copyOf(elements, size, a.getClass());
         return result;
     }
@@ -262,37 +266,51 @@ public <T> T[] toArray(T[] a){
 }
 ```
 
-`@SuppressWarnings("unchecked")`를 사용할 때 왜 안전성이 확실한지 주석으로
-남겨둬야 한다.
+`@SuppressWarnings("unchecked")`를 사용할 때 왜 안전성이 확실한지 주석으로 남겨둬야 한다.
+
+
+-------------------
+
 
 ### Rule No.25 배열 대신 리스트를 써라
 
-이유는 Exception 에러가 발생되느냐 아니면 **처음부터 compile이 안되게
-만들것이냐** 이다
+- 배열: 공변자료형
+- generic: 불변자료형
+
+
+공변자료형: Sub(extends Super), Super 인 경우 Sub[]도 Super[]의 의 하위자료형이다
+불변자료형: Type1, Type2가 있을때 List< Type1>은 List< Type2> 상위, 하위 자료형이 될 수 없다.
+
+
 
 ```
+// 실행 중에 문제를 일으킴
 Object[] objectArray = new Long[1]; // ArrayStoreException
 objectArray[0] = "I love cakes";
 ```
 
 ```
+// 컴파일 되지 않음
 List<Object> ol = new ArrayList<Long>();
 ol.add("I love cakes");
 ```
 
-둘 중 어느방법을 사용해도 Long 객체 container안에 String을 넣을 수 없다. 하지만
-배열을 사용하면 실행중에 알게되고 `List`를 사용하면 컴파일조차 되지 않아 더
-빠르게 알 수 있다.
+실행 후 Exception 에러가 발생되느냐 **or** 처음부터 compile이 안되게 만들것이냐 이다
 
-이러한 특징으로 배열과 generic은 사용이 어렵다. **generic 자료형, 형인자 자료형,
-형인자 배열**을 생성하는 문법은 컴파일 되지 않는다.
+##### 배열은 실체화(reification) 되는 자료형
+
+String 객체를 Long 배열에 넣으려고 하면 ArrayStoreException이 발생한다.
+generic은 삭제(erasure)과정을 통해 구현된다.
+> 자료형에 관계된 조건들은 컴파일 시점에만 적용되고, 각 원소의 자로형 정보는 프로그램이 실행될 때는 삭제된다. 덕에 제너릭 자료형은 제너릭을 사용하지 않고 작성된 오래된 코드와도 문제없이 연동한다.
+
+
+이러한 특징으로 배열과 generic은 함께 사용이 어렵다.
+
+`new List<E>[]`, `new List<String>[]`, new E[]`는 전부 compile 되지 않는다.
 
 ##### generic 배열이 생성되지 않는 이유
 
 typesafe(형 안정성)이 보장되지 않는다.
-
-배열은 공변 자료형(convariant)이다. Sub가 Super의 하위 자료형 이라면, Sub[]도
-Super[]의 하위 자료형이다. generic은 불변 자료형(invarient)이다.  
 
 
 ```
@@ -315,6 +333,10 @@ List[] 이다. 따라서 ArrayStoreException이 나오지 않는다. 5에서 꺼
 정보는 삭제된다. 따라서 **배열**은 **compile 시간에 형 안정성을 보장하지
 못하며**, 제너릭은 보장할 수 있다.
 
+
+---------------------------------
+
+
 ### Rule No.26 가능하면 generic 자료형으로 만들것
 
 generic 자료형과 method를 사용하는건 어렵지 않다.
@@ -336,7 +358,7 @@ public class Stack {
   }
 
   public void push(Object e){
-   ensureCapacity();
+    ensureCapacity();
     elements[size++] = e;
   }
 
@@ -362,6 +384,7 @@ public class Stack {
 
 이 클래스가 generic화 하기 좋은 예시다. 호환성을 유지하면서도 generic 자료형을
 사용할 수 있도록 개선할 수 있다.
+generic을 사용하면 꺼낼때 casting을 생략할 수 있다.
 
 ```
 import java.util.Arrays;
@@ -512,9 +535,13 @@ class DelayQueue<E extends Delayed> implements BlockingQueue<E>;
 
 가능하면 **기존**자료형을 **generic** 자료형으로 변환하라
 
+
+-----------------
+
+
 ### Rule No.27 가능하면 generic method로 만들것
 
-generification으로 혜택을 보는것은 class뿐 아니라 method도 포함 된다. 특히
+generification으로 혜택을 보는것은 class뿐 아니라 method도 포함 된다.
 static untility method는 특히나 generic하기 편리하다
 
 ```
@@ -613,7 +640,7 @@ public static void main(String[] args){
     UnaryFunction,String> sameString = identityFunction();
     for(String s : strings)
         System.out.println(sameString.apply(s));
-        
+
     Number[] numbers = {1, 2.0, 3L};
     UnaryFunction<Number> sameNumber = identityFunction();
     for(Number n : numbers)
@@ -797,7 +824,7 @@ Comparable은 언제나 **소비자**이다. 따라서 Comparable< ? super T>를
 ```
 public static < T extends Comparable< ? super T>> T max(
     List< ? extends T> list){
-    
+
     Iterator<T> i = list.iterator();
     T result = i.next();
     while(i.hasNext()){
@@ -1062,7 +1089,7 @@ enum 상수는 int값 하나에 대응한다.
 public enum Ensemble{
 	SOLD, DUET, TRIO, QUARTET, QUINTET,
     SEXTET, SEPTET, OCTET, NONET, DECTET;
-    
+
     public int numberOfMusicians(){ return ordinal() + 1; }
 }
 ```
@@ -1077,7 +1104,7 @@ public enum Ensemble{
 	SOLD(1), DUET(2), TRIO(3), QUARTET(4), QUINTET(5),
     SEXTET(6), SEPTET(7), OCTET(8), DOUBLE_QUARTET(8),
     NONET(9), DECTET(10), THRIPLE_QUARTET(12);
-    
+
     private final int numberOfMusicians;
     Ensemble(int size){this.numberOfMusicians = size;}
     public int numberOfMusicians(){ return numberOfMusicians; }
@@ -1127,7 +1154,7 @@ bit를 직접 조작할 때 생길 수 있는 오류나 어수선한 로직을 �
 public class Text{
 
 	public enum Style{ BOLD, ITALIC, UNDERLINE, STRIKETHROUGH }
-    
+
     public void applyStyles(Set<Style> styles){ ... }
 
 }
@@ -1186,7 +1213,7 @@ public class Herb {
 
 ```
 Herb[] garden = ...;
-Set<Herb>[] herbsByType = 
+Set<Herb>[] herbsByType =
 	(Set<Herb>[]) new Set[Herb.Type.values().length]; // 품종 갯수만큼
 for(int i=0; i<herbsByType.length; i++)
 	herbsByType[i] = new HashSet<Herb>();
