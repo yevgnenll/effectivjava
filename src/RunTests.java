@@ -17,6 +17,8 @@ public class RunTests {
           passed++;
         } catch (InvocationTargetException wrappedExc){
           Throwable exc = wrappedExc.getCause();
+          Class<? extends Exception> excType =
+              m.getAnnotation(ExceptionTest.class).value();
           System.out.println(m + " failed: " + exc);
         } catch (Exception exc){
           System.out.println("INVALID @Test: "+ m);
