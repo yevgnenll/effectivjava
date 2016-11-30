@@ -1,22 +1,23 @@
-
 /**
  * Created by yevgnen on 2016-11-30.
  */
 public class Sample {
-  // @Test
+  @Test
   public static void m1(){}
   public static void m2(){}
-  // @Test
+  @Test
   public static void m3(){
     throw new RuntimeException("Boom");
   }
   public static void m4(){}
-  // @Test
+  @Test
   public static void m5(){}
   public static void m6(){}
-  // @Test
+  @Test
   public static void m7(){
     throw new RuntimeException("Crash");
   }
   public static void m8(){}
+
+
 }
