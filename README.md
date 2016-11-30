@@ -255,7 +255,7 @@ Set<Lark> exaltation = new HashSet<Lark>();
 ```
 public <T> T[] toArray(T[] a){
     if(a.length < size){
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked") 
         T[] result = (T[]) Arrays.copyOf(elements, size, a.getClass());
         return result;
     }
@@ -548,7 +548,7 @@ class DelayQueue<E extends Delayed> implements BlockingQueue<E>;
 ### Rule No.27 가능하면 generic method로 만들것
 
 generification으로 혜택을 보는것은 class뿐 아니라 method도 포함 된다.
-static untility method는 특히나 generic하기 편리하다
+**static** untility method는 특히나 generic하기 편리하다
 
 ```
 public static <E> Set<E> union(Set<E> s1, Set<E> s2){
@@ -605,8 +605,9 @@ Map<String, List<String>> anagrams = newHashMap();
 
 >   java 1.7 부터는 추론이 가능하다 고로 위 코드는 지나가도 좋다
 
-이것에 관련된 **generic singleton pattern**이 있다. (chapter 2에서 static
-factory method에 연관짓는것이 singleton pattern이다)
+
+
+이것에 관련된 **싱클톤 패턴**이 있다.
 
 때로는 변경이 불가능하지만 많은 자료형에 적용 가능한 객체를 만들어야 할때
 사용한다. generic은 자료형 삭제 과정을 통해 구현되므로 모든 필요한 형인자화
@@ -624,8 +625,10 @@ public static interface UnaryFunction<T>{
 효율적이지 않다.
 
 ```
-private static UnaryFunction<Object> IDENTITY_FUNCTION = Dnew UnaryFunction<Object>(){
-    public Object apply(Object arg){ return arg; }
+private static UnaryFunction<Object> IDENTITY_FUNCTION
+	= new UnaryFunction<Object>(){
+    	public Object apply(Object arg){ return arg; 
+    }
 }
 
 @SuppressWarning("unchecked")
@@ -634,36 +637,51 @@ public static <T> UnaryFunction<T> identityFunction(){
 }
 ```
 
-IDENTITY\_FUNCTION을 (UnaryFunction)로 casting하면 unchecked cast warning이
+IDENTITY_FUNCTION을 (UnaryFunction)로 casting하면 unchecked cast warning이
 발생한다. 하지만, 항등함수는 특별히 인자를 수정없이 반환하기 때문에 T가 무엇이든
 UnaryFunction 인 것 처럼 써도 형 안정성이 **보장** 된다.
 
-사용 예시
+싱글톤 사용 예시
 
 ```
 public static void main(String[] args){
     String[] strings = {"jute", "hemp", "nylon"};
-    UnaryFunction,String> sameString = identityFunction();
+    UnaryFunction<String> sameString = identityFunction();
     for(String s : strings)
         System.out.println(sameString.apply(s));
 
-    Number[] numbers = {1, 2.0, 3L};
+	Number[] numbers = {1, 2.0, 3L};
     UnaryFunction<Number> sameNumber = identityFunction();
     for(Number n : numbers)
         System.out.println(sameNumber.apply(n));
 }
 ```
 
-**대체 실체화 자료형(배열)이 뭐지?**
-[reflaction](https://en.wikipedia.org/wiki/Reification) - 배열은 실체화 자료형:
-배열의 각 원소의 자료형은 실행시간에 결정된다.(ClassCastException) - 실체화
-불가능 자료형: compile 에러로 확인이 가능함
 
-형인자가 포함된 표현식으로 형인자를 한정할 수 있다. `public static <T extends
-Comparable<T>> T max(List<T> list)){...}`
+형인자가 포함된 표현식으로 형인자를 한정할 수 있다.
+이런 용벅을 재귀적 자료 한정recursive type bound) 이라한다.
 
-이것을 문장으로 표현하면 **자기 자신과 비교 가능한 모든 자료형 T**
+```
+public interface Comparable<T>{
+	int compareTo(T o);
+}
+```
 
+`compareTo` 는 모두 같은 자료형 객체만 비교할 수 있다.(당연)
+Comparable을 구현하는 원소들의 리스트를 인자로 받는 method가 많은데
+이러한 method들은 정렬, 탐색 등을 하며 max, min을 계산한다.
+
+이러한 작업을 위해서 원소들이 서로 비교 가능해야하고, 이 조건을 을 위해
+아래와 같이 표현할 수 있다.
+
+
+```
+	public static <T extends Comparable<T>> T max(List<T> list)){...}
+```
+
+이것을 문장으로 표현하면 **자기 자신과 비교 가능한 모든 자료형 T** 이다
+
+**재귀적 한정**을 구현한 예시 method
 ```
 public static <T extends Comparable<T>> T max(List<T> list){
     Iterator<T> i = list.iterator();
@@ -677,15 +695,17 @@ public static <T extends Comparable<T>> T max(List<T> list){
 }
 ```
 
-이것보다 복잡한 경우도 많지만 많이 사용되는건 아니다.
-
 generic method는 클라이언트가 직접 입력 값, 반환값의 자료형을 **casting** 하는것
 보다 사용하기 쉽고 typesafe도 유지하기 쉽다. 시간날때 기존의 method를
 generic으로 수정해두는 작업을 해두면 편리하다
 
+
+---------------------------
+
+
 ### Rule No.28 한정적 와일드카드를 서서 API 유연성을 높여라
 
-generic은 **불변(invariant)** 자료형이다. List, 이 List의 하위 자료형이 아니다.
+generic은 **불변(invariant)** 자료형이다. `List< String>`, 이 `List< Object>`의 하위 자료형이 아니다.
 
 ```
 public class Stack<E>{
@@ -696,8 +716,7 @@ public class Stack<E>{
 }
 ```
 
-이러한 스택에 원소들을 인자로 받아 차례로 스택에 넣는 `pushAll`을 구현하고
-싶다면
+이러한 스택에 원소들을 인자로 받아 차례로 스택에 넣는 `pushAll`을 구현하고 싶다면
 
 ```
 public void pushAll(Iterable<E> src){
@@ -830,7 +849,7 @@ Comparable은 언제나 **소비자**이다. 따라서 Comparable< ? super T>를
 ```
 public static < T extends Comparable< ? super T>> T max(
     List< ? extends T> list){
-
+    
     Iterator<T> i = list.iterator();
     T result = i.next();
     while(i.hasNext()){
@@ -856,6 +875,11 @@ list가 List가 아니므로 iteraotr method가 Iterator를 반환하지 않는�
 `Iteraotr< ? extends T> i = list.iteraotr();` 로 수정해야 한다.
 
 \***다시봐야함**
+
+
+
+
+----------------------------
 
 ### Rule No.29형 안정 다형성 컨테이너를 쓰면 어떨지 따져보라
 
@@ -1095,7 +1119,7 @@ enum 상수는 int값 하나에 대응한다.
 public enum Ensemble{
 	SOLD, DUET, TRIO, QUARTET, QUINTET,
     SEXTET, SEPTET, OCTET, NONET, DECTET;
-
+    
     public int numberOfMusicians(){ return ordinal() + 1; }
 }
 ```
@@ -1110,7 +1134,7 @@ public enum Ensemble{
 	SOLD(1), DUET(2), TRIO(3), QUARTET(4), QUINTET(5),
     SEXTET(6), SEPTET(7), OCTET(8), DOUBLE_QUARTET(8),
     NONET(9), DECTET(10), THRIPLE_QUARTET(12);
-
+    
     private final int numberOfMusicians;
     Ensemble(int size){this.numberOfMusicians = size;}
     public int numberOfMusicians(){ return numberOfMusicians; }
@@ -1160,7 +1184,7 @@ bit를 직접 조작할 때 생길 수 있는 오류나 어수선한 로직을 �
 public class Text{
 
 	public enum Style{ BOLD, ITALIC, UNDERLINE, STRIKETHROUGH }
-
+    
     public void applyStyles(Set<Style> styles){ ... }
 
 }
@@ -1219,13 +1243,18 @@ public class Herb {
 
 ```
 Herb[] garden = ...;
-Set<Herb>[] herbsByType =
+Set<Herb>[] herbsByType = 
 	(Set<Herb>[]) new Set[Herb.Type.values().length]; // 품종 갯수만큼
 for(int i=0; i<herbsByType.length; i++)
 	herbsByType[i] = new HashSet<Herb>();
+for(Herb h : garden)
+	herbsByType[h.type.ordinal()].add(h);
 ```
 
 동작은 하지만 배열은 generic과 호환되지 않고, 무점검 형변환이 필요하다
+배열은 첨자가 무엇을 나타내는지 모르고 label을 수동으로 붙여줘야 한다.
+
+enum은 **상수**에 대응시킬 목적으로 나타났다
 
 ```
 Map<Herb.Type, Set<Herb>> herbsByType =
@@ -1235,6 +1264,101 @@ for(Herb.type t : Herb.Type.values())
 for(Herb b : garden)
 	herbsByType.get(h.type).add(h);
 ```
+
+[enumMap 이란?](https://docs.oracle.com/javase/7/docs/api/java/util/EnumMap.html)
+enumMap 자체가 각 데이터에 데응하는 숫자를 key로 만들어주는 역할을 하기 때문에
+배열을 사용하는것 보다 enumMap을 사용하면 ordinal을 사용한 것 보다 성능 면에서 비등하며,
+무점검 형변환도 필요없고 label을 만들어야 할 이유도 없다.
+
+위의 코드를 보면 key의 자료형을 나타내는 class 객체를 인자로 받는것을 주의해야한다.
+`Map<Herb.Type, Set<Herb>> herbsByType = new EnumMap<Herb.Type, Set<Herb>>(Herb.Type.class);`
+
+
+```
+public enum Phase {
+  SOLID, LIQUID, GAS;
+
+  public enum Transition{
+    MELT, FREEZE, BOIL, CONDENSE, SUBLIME, DEPOSIT;
+
+    private static final Transition[][] TRANSITIONS = {
+        { null, MELT, SUBLIME },
+        { FREEZE, null, BOIL },
+        { DEPOSIT, CONDENSE, null }
+    };
+
+    public static Transition from(Phase src, Phase dst){
+      return TRANSITIONS[src.ordinal()][dst.ordinal()];
+    }
+  }
+}
+```
+
+2중 배열을 사용한 케이스이다. ordinal을 사용해 첨자(하나의 변수에 두 개 이상의 데이터)를 만들었다.
+이 코드는 간결해보이지만 정확한 예측이 불가능하고
+`ArrayIndexOutOfBoundsException`이나 `NullPointerException`이 나올 수 있다.(최악)
+만약에 값이라도 추가되면 일이 산더미로 불어나게 된다.
+
+위 코드에서 Phase의 상태를 나타내는것은 두가지 인데 이것을 EnumMap으로 대응해야한다.
+
+
+```
+import java.util.EnumMap;
+import java.util.Map;
+
+public enum Phase {
+  SOLID, LIQUID, GAS;
+
+  public enum Transition {
+    MELT(SOLID, LIQUID), FREEZE(LIQUID, SOLID),
+    BOIL(LIQUID, GAS), CONDENSE(GAS, LIQUID),
+    SUBLIME(SOLID, GAS), DEPOSIT(GAS, SOLID);
+
+    private final Phase src;
+    private final Phase dst;
+
+    Transition(Phase src, Phase dst) {
+      this.src = src;
+      this.dst = dst;
+    }
+
+    private static final Map<Phase, Map<Phase, Transition>> 
+    	m = new EnumMap<Phase, Map<Phase, Transition>>(Phase.class);
+
+    static {
+      for(Phase p : Phase.values())
+        m.put(p, new EnumMap<Phase, Transition>(Phase.class));
+      for(Transition trans : Transition.values())
+        m.get(trans.src).put(trans.dst, trans);
+    }
+
+    public static Transition from(Phase src, Phase dst) {
+      return m.get(src).get(dst);
+    }
+  }
+}
+```
+
+이 `Phase`는 상전이 이전 상태, 상전이 이후 상태를 대응시키는 map이다
+`static` 블록에서 첫 for문은 바깥 Map을 초기화 하고
+그 다음 for문에서는 내부 Map의 상태를 초기화 한다
+
+`EnumMap`은 내부적으로 배열의 배열이기 때문에 memory 요구량이나 성능 측면에서
+크게 손해를 일으키지도 않는다. 하지만, 프로그램은 명료해지고, 안전하며, 유지보수하기 좋다
+
+결론 `ordinal` 대신 `EnumMap`을 사용하라
+
+
+-------------------------
+
+### Rule No.34 확장이 필요한 enum을 만들어야 한다면 interface로
+
+
+
+
+
+
+
 
 
 
