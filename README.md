@@ -1353,18 +1353,343 @@ public enum Phase {
 
 ### Rule No.34 확장이 필요한 enum을 만들어야 한다면 interface로
 
+enum 자료형은 계승을 통한 확장이 불가능하다
+확장된 자료형의 상수들이 기본 자료형의 상수가 될 수 잇다. 그러나 그 반대는 될 수 없다.
+enum은 상속이 가능하다면 설계와 구현에 대해 많은 부분이 수정되어야 한다.
 
 
+```
+public enum BasicOperation implements Operation {
+  PLUS("+") {
+    public double apply(double x, double y) { return x + y; }
+  }, Minus("-") {
+    public double apply(double x, double y) { return x - y; }
+  }, TIMES("*") {
+    public double apply(double x, double y) { return x * y; }
+  }, DIVIDE("/") {
+    public double apply(double x, double y) { return x / y; }
+  };
+
+  private final String symbol;
+  BasicOperation(String symbol) { this.symbol = symbol;}
+  @Override public String toString(){ return symbol; }
+}
+```
+
+BasicOperation은 enum 자료형이라 확장이 불가능하지만 Operation은 interface라 확장이 가능하다.
+
+```
+public enum ExtendedOperation implements Operation{
+
+  EXP("^"){
+    public double apply(double x, double y){
+      return Math.pow(x, y);
+    }
+  },
+  REMAINER("%"){
+    public double apply(double x, double y){
+      return x % y;
+    }
+  };
+
+  private final String symbol;
+
+  ExtendedOperation(String symbol) {
+   this.symbol = symbol;
+  }
+  @Override
+  public String toString(){
+    return symbol;
+  }
+}
+```
+
+`ExtendedOperation.class`가 main에서 test로 전달되고 있다.
+확장된 연산 집합을 알리기 위한 것이다.
+class 객체가 나타내는 모든 자료형이 `enum`자료형이고 `Operation`의 하위 자료형이 되도록 한다.
+모든 enum 내부의 상수를 순차적으로 살펴보면서 해당 상수가 나타내는 연산을 실제로 수행한다.
 
 
+```
+import java.util.Arrays;
+import java.util.Collection;
+
+public class Main {
+
+  public static void main(String[] args) {
+    double x = Double.parseDouble(String.valueOf(100));
+    double y = Double.parseDouble(String.valueOf(7));
+    test(Arrays.asList(ExtendedOperation.values()), x, y);
+    System.out.println(ExtendedOperation.class);
+  }
+
+  private static void test(Collection< ? extends Operation> opSet,
+      double x, double y){
+    for(Operation op : opSet)
+      System.out.printf("%f %s %f = %f%n", x, op, y, op.apply(x, y));
+  }
+
+}
+```
+
+method를 호출할 때, 여러 enum 자료형에 정의한 연산들을 함께 전달할 수 있도록 하기 위함이다.
+(list 형식으로 한꺼번에 보낸다) 그런데 `EnumSet`이나 `EnumMap`을 사용할 수 없다.
 
 
+interface를 사용해 확장 가능한 enum 자료형을 만들때는 `enum` 구현 자체는 상속이 불가능하다.
+
+**summary**: 확장 가능한 enum 자료형을 만들수는 없다. 하지만, interface를 만들고
+그 interface를 implements 하면 enum 자료형을 손수 만들 수 있다.
 
 
+-------------------------
+
+### Rule No.35 작명 대신 annotation을 사용하라
+
+java 1.5 이전에는 framework을 사용할때 특별한 취급을 위해 method에 prefix name을 붙이곤 하였다.
+ex. Junit에서 test로 시작하는 method
+
+하지만 이 방법은 문제가 있다. 이러한 규칙을 모른다면 사용하기가 어렵다는것이다.
+그 외에도 특정한 프로그램 요소에만 적용 되도록 할 수 없다는것,
+인자를 전달하기가 매우 어려워진다 등 다양한 약점이 존재한다.
+
+annotation은 이 모든 문제를 해결할 수 있다.
+annotation을 붙이는 것 만으로도 test 시에 자동으로 실행되야 하는 method를 지정할 수 있고,
+예외가 발생하면 test가 실패한것으로 가정하겠다는 사실을 명시할 수 있다.
 
 
+```
+import java.lang.annotation.*;
+/**
+* 어노테이션이 붙은 method가 test method 임을 표시
+* parameterless static method에만 사용이 가능하다
+*/
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.MEHTOD)
+public @interface Test{
+
+}
+```
+
+`@Retention(RetentionPolicy.RUNTIME)` 은 Test가 실행시간(runtime)에도 유지되어야 한다는 뜻이고
+`@Target(ElementType.MEHTOD)`는 Test가 method 선언부에만 적용하겠다는 것이다.
+
+annotation은 인자를 받지 않고, "표시"를 하는 역할만 한다.
+
+```
+@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.METHOD)
+public @interface Test{
+}
+```
+
+```
+public class Sample {
+  @Test
+  public static void m1(){}
+  public static void m2(){}
+  @Test
+  public static void m3(){
+    throw new RuntimeException("Boom");
+  }
+  public static void m4(){}
+  @Test
+  public static void m5(){}
+  public static void m6(){}
+  @Test
+  public static void m7(){
+    throw new RuntimeException("Crash");
+  }
+  public static void m8(){}
+}
+```
+
+m3과 m7은 예외를 발생시키고, m1과 m5는 예외 없이 수행한다.
+m5는 객체 method이다. 따라서 annoation을 잘못 사용한 예시이다.
+Test 도구는 annotation이 없는 나머지 method는 무시한다.
+
+`Test` annotation은 Sample 클래스가 동작하는데 직접적인 영향을 주지 않는다.
+
+```
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+public class RuntTests {
+  public static void main(String[] args) throws Exception{
+    int tests = 0;
+    int passed = 0;
+    Class testClass = Class.forName(args[0]);
+    for(Method m : testClass.getDeclaredMethods()){
+      if(m.isAnnotationPresent(Test.class)){
+        tests++;
+        try {
+          m.invoke(null);
+          passed++;
+        } catch (InvocationTargetException wrappedExc){
+          Throwable exc = wrappedExc.getCause();
+          System.out.println(m + " failed: " + exc);
+        } catch (Exception exc){
+          System.out.println("INVALID @Test: "+ m);
+        }
+      }
+    }
+    System.out.printf("passed: %d, Failed: %d%n", passed, tests- passed);
+  }
+}
+```
+
+이 테스트를 실행하는 code는 class method 안에서도 `@Test` annotation이 붙은 모든 emthod를 차자내어
+reflection 기능을 활용해 실행한다.
+
+`isAnnotationPresent(Test.class)` **method는 실행해야 하는 test method를 찾는데 사용된다.**
 
 
+```
+/**
+ * Created by yevgnen on 2016-11-30.
+ */
+public @interface ExceptionTest {
+  Class< ? extends Exception> value();
+}
+```
+
+이 annotation은 특정한 예외가 발생했을 때만 성공하는 테스트 코드이다.
+wildcard 자료형을 사용해서 `Exception`을 상속받은 객체를 걸러낸다
+
+```
+// 인자를 받는 annotation example
+  public class Sample2 {
+  @ExceptionTest(ArithmeticException.class)
+  public static void m1(){
+    int i = 0;
+    i = i / i;
+  }
+  @ExceptionTest(ArithmeticException.class)
+  public static void m2(){
+    int[] a = new int[0];
+    int i = a[1];
+  }
+
+  @ExceptionTest(ArithmeticException.class)
+  public static void m3(){}
+}
+```
+
+이 코드에 적합한 RunTest를 만들면
+
+```
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+/**
+ * Created by yevgnen on 2016-11-30.
+ */
+public class RunTests {
+  public static void main(String[] args) throws Exception{
+    int tests = 0;
+    int passed = 0;
+    Class testClass = Class.forName(args[0]);
+    for(Method m : testClass.getDeclaredMethods()){
+      if(m.isAnnotationPresent(Test.class)){
+        tests++;
+        try {
+          m.invoke(null);
+          passed++;
+        } catch (InvocationTargetException wrappedExc){
+          Throwable exc = wrappedExc.getCause();
+          Class< ? extends Exception> excType =
+              m.getAnnotation(ExceptionTest.class).value();
+          System.out.println(m + " failed: " + exc);
+        } catch (Exception exc){
+          System.out.println("INVALID @Test: "+ m);
+        }
+      }
+    }
+    System.out.printf("passed: %d, Failed: %d%n", passed, tests- passed);
+  }
+}
+
+```
+
+모두 똑같지만 
+
+`Class< ? extends Exception> excType = m.getAnnotation(ExceptionTest.class).value();`
+코드가 추가되었다. m 에서 annotation을 걸러네어 ExceptionTest의 class인지 확인한다
 
 
+annotation이 있다면, 더 이상 작명 패턴에 기댈 필요가 없다.
+annotation은 이미 제공되어있기 때문에(대부분) 굳이 새로 정의하면서 사용할 필요는 없다.
 
+
+-------------------------
+
+### Rule No.36 Override annotation은 일관되게 사용하라
+
+annotation이 추가 된 이후 가장 많이 사용된것은 @Override 이다.
+상위 class의 method를 overring 할때 가장 많이 사용하는데 일관되게 사용한다면
+버그가 최소화된 올바른 코드를 작성할 수 있다.
+
+
+```
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Created by yevgnen on 2016-11-30.
+ */
+public class Bigram {
+  private final char first;
+  private final char second;
+
+  public Bigram(char first, char second){
+    this.first = first;
+    this.second = second;
+  }
+
+  public boolean equals(Bigram b){
+    return b.first == first && b.second == second;
+  }
+
+  public int hashCode(){
+    return 31 * first + second;
+  }
+
+  public static void main(String[] args){
+    Set<Bigram> s = new HashSet<>();
+    for(int i = 0; i< 10; i++)
+      for(char ch = 'a'; ch <= 'z'; ch++)
+        s.add(new Bigram(ch, ch));
+  }
+}
+
+```
+
+이 코드에서 equals, hashCode를 overridng 했지만, equals는 overloading이 되었다.
+다시 정의된 함수인게 아니라 그냥 똑같은 이름의 다른 일을 하는 equals 인것이다.
+상위 class에서 equals를 overring 할때 parameter는 object type을 받아야 한다.
+
+
+```
+  @Override
+  public boolean equals(Bigram b){
+    return b.first == first && b.second == second;
+  }
+```
+
+여기서 에러가 나는데 doesn't override or implemnet a method 라는 결과가 나온다
+
+```
+  @Override
+  public boolean equals(Object o){
+    if(!(o instanceof Bigram))
+      return false;
+    Bigram b = (Bigram) o;
+    return b.first == first && b.second == second;
+  }
+```
+
+그리고 상위 클래스의 method를 overring 할때는 반드시 `@Override` annotation을 붙여야 한다.
+하지만 **예외**가 있다
+
+absract class를 상속받을때는 `@Override` annotation을 안붙여도 된다
