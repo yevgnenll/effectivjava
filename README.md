@@ -1693,3 +1693,36 @@ public class Bigram {
 하지만 **예외**가 있다
 
 absract class를 상속받을때는 `@Override` annotation을 안붙여도 된다
+class 뿐 아니라 interface 에 선언된 method를 구현할 때도 Override를 붙여야 한다.
+물론 필수는 아니지만, 똑같은 method 선언을 피하기 위해서라도 해두는게 좋다
+
+
+-------------------------
+
+### Rule No.37 자료형을 정의할 때 표식 interface를 사용하라
+
+maker interface: 표시 인터페이스 는 아무 method도 선언하지 않은 interface이다
+maker interface를 사용한다는 뜻은 어떤 속성을 만족한다는 사실을 표시하는것과 같다.
+이 interface를 구현한 class를 만들겠다는 것은 해당 클래스로 만든 객체들은
+ObjectOutputStream으로 출력할 수 있다는 뜻이다.
+
+제기할 수 있는 문제로는
+maker annotation을 사용하면 maker interface는 필요없어지는게 아닐까? 인데
+그렇지 않다.
+
+1. maker interface는 표식이 붙은 클래스가 만드는 객체가 구현한 자료형이다
+	- 표식 annotation은 자료형이 아니다.
+	- maker interface는 자료형이므로, 실행 중이나 발견하게 도리 오류를 compile 시점에 발견한다.
+2. 적용 범위를 더 세밀하게 지정할 수 있다.
+	- `ElementType.TYPE`으로 지정하면 annotation은 class, interface에도 적용이 가능하다
+
+표식이 필요한 class에는 단순히 extends 만 하면 된다.
+
+maker annotation의 주된 장점은 프로그램 안에서 annotation 자료형을 쓰기 시작한 뒤에도
+더 많은 정보를 추가할 수 있다.
+기본값을 갖는 annotation type element들을 더해 나가면 된다.
+
+하지만 maker interface는 이런 부분이 불가능하다
+
+
+--------------------------
