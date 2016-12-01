@@ -10,15 +10,10 @@ import java.util.Set;
  * Created by yevgnen on 2016-12-01.
  */
 public class CollectionClassifier {
-  public static String classify(Set<?> s){
-   return "Set";
-  }
 
-  public static String classify(List<?> lst){
-    return "List";
-  }
   public static String classify(Collection<?> c){
-    return "unknow collection";
+    return c instanceof Set ? "set" :
+          c instanceof List ? "List" : "Unknow Collection";
   }
 
   public static void main(String[] args){
