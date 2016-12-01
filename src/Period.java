@@ -14,15 +14,17 @@ public class Period {
   * @throws NullPointException throw null when start or end is null
   * */
   public Period(Date start, Date end){
-    if(start.compareTo(end) > 0)
-      throw new IllegalArgumentException(start + " after " + end);
-    this.start = start;
-    this.end = end;
+    this.start = new Date(start.getTime());
+    this.end = new Date(end.getTime());
+    if(this.start.compareTo(this.end) > 0)
+      throw new IllegalArgumentException(
+          this.start + " after " + this.end
+      );
   }
   public Date start(){
-    return start;
+    return new Date(start.getTime());
   }
   public Date end(){
-    return end;
+    return new Date(end.getTime());
   }
 }
