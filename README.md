@@ -1746,8 +1746,11 @@ annotation
 
 
 parma이 `null`이나 음수가 될 수 없는 경우에는 제한을 해야한다.
+
 되도록 method 시작 부분에 적용하여 error를 빠르게 찾아내야 한다.
+
 이런 규칙을 생략하면 **debugging**이 어려워 진다.
+
 
 유효성 검사가 없다면
 
@@ -1755,6 +1758,7 @@ parma이 `null`이나 음수가 될 수 없는 경우에는 제한을 해야한�
 2. 동작은 하는데 엉뚱한 결과를 낸다 -> 후에 엉뚱한 곳에서 에러를 낸다
 
 public method에 대해서는 Exception class 들을 이용해서 유효성 검사를 하고
+
 public이 아닌 method는 개발자가 제어할 수 있는 상황이므로 `assertion`을 이용한다.
 
 
@@ -1771,11 +1775,16 @@ private static void sort(long a[], int offset, int length){
 통상적인 유효성 검사와 달리 assertion을 이용하여 조건이 만족되지 않으면 `AssertionError`를 낸다
 
 생성자는 유효성 검사를 반드시 해야한다는 원칙의 특별한 경우에 해당한다.
+
 유효성 검사도 예외를 두어 하지 말아야 하는 경우가 있다.
 
+
 `Collection.sort(List)` 처럼 객체 리스트를 정렬 하는 경우.
+
 리스트 내부의 모든 객체가 비교할 수 있어야 하기 때문에 비교가 불가능한경우
+
 `ClassCastException`이 발생한다.
+
 
 > 즉, 유효성 검사를 실행하는 오버헤드가 너무 크거나, 비현실적이고, 계산과정에서 유효성 검사가 자연스럽게 이루어지는 경우다.
 
@@ -1788,11 +1797,16 @@ private static void sort(long a[], int offset, int length){
 ### Rule No.39 필요하다면 방어적 복사본을 만들어라
 
 자바가 편리한 이유는 safe language이기 때문이다.
+
 native method를 사용하지 않으면 buffer overrun이나 array overrun, wild pointer 같은
+
 메모리 훼손 오류가 생기지 않는다.
 
+
 하지만, 우리가 코드를 작성할 때에는 client 사용자가 작성된 class의 invariant를 망가뜨리기위해
+
 최선을 다한다는 최악의 경우를 고려하며 만들어야 한다.
+
 
 왜냐하면 실수로 API를 잘못 사용할 수 있음을 고려해야 하기 때문이다.
 
@@ -1846,16 +1860,22 @@ end.setYear(78); // p의 내부를 변경했다.
       );
   }
 ```
+**Q)**실제로 이렇게 사용하는지
+
 
 여기서 주목할만한 부분은 유효성 검사를 하기 전에 방어적 **복사본**을 **만들었다**는 사실에 유의해야한다.
+
 유효성 검사는 복사본에 대해서 시행해야한다.
 
+
 인자를 검사한 **직후** 복사본이 만들어지기 직전까지의 시간에 다른 thread가
+
 인자를 변경해버리는 일을 막기 위한 것이다.
+
 
 게다가 clone을 사용하지 않았다.
 
-그런데 paramter를 통한 공격은 방어했지만, 접근자를 통한 공격은 막을 수 엇ㅂ다.
+그런데 paramter를 통한 공격은 방어했지만, 접근자를 통한 공격은 막을 수 없다.
 
 
 ```
@@ -1880,11 +1900,15 @@ p.end().setYear(78);
 
 length가 0이 아닌 모든 배열은 **변경이 가능하다** 라는 사실을 염두해야한다.
 
+
 방어적 복사본을 사용할땐 성능상 손해가 있다. 클라이언트가 패키지 내부에 있어 변경하지 않는다는게
+
 보장되면, 방어적 복사본을 만들지 않아도 된다. 단, 이러한 상황에서는 method 호출자가
+
 parameter나 return을 변경하면 안된다는 사실을 명시해야 한다.
 
-summary
+
+**summary**
 
 클라이언트로부터 구했거나 반환되는 변경 가능 component의 경우 방어적으로 복사해야한다.
 
@@ -1899,9 +1923,9 @@ summary
 2. 더 널리 부합하는 이름을 사용하라
 3. 편의 method를 제공하는데 너무 리소스 낭비를 하지 마라
 	- 맡은 일이 명확하고 충실해야한다
-	- method가 너무 많으면 test, 유지보수가 어렵다
+	- method가 너무 길면 test, 유지보수가 어렵다
 	- 자주 쓰이는 것만 모듈화하고 아니면 빼라
-4. parameter list를 길게 만들지 마라\
+4. parameter list를 길게 만들지 마라
 	- 4개 이하가 적당하다
 
 긴 parameter list를 줄이는 방법
@@ -1914,7 +1938,9 @@ summary
 #### 인자의 자료형으로는 class보다 interface가 좋다
 
 `HashMap`을 인자의 자료형으로 사용할 필요는 없다.`Map`을 사용하는게 좋다
+
 그렇게 하면 `Hashtable`을 인자로 받을 수 있고, `TreeMap`, `TreeMap`의 하위 자료까지
+
 모두 param으로 받을 수 있기 때문이다. class를 사용하면 종속적이다
 
 
@@ -1925,7 +1951,7 @@ IDE를 사용한다면 더욱 잘맞게 되고, 다른 옵션을 추가하기도
 
 --------------------------
 
-### Rule No.40 오버로딩 할 때는 주의하라
+### Rule No.41 오버로딩 할 때는 주의하라
 
 ```
 import java.math.BigInteger;
@@ -1946,7 +1972,7 @@ public class CollectionClassifier {
     return "List";
   }
   public static String classify(Collection<?> c){
-    return "unknow collection";
+    return "unknown collection";
   }
 
   public static void main(String[] args){
@@ -1957,15 +1983,17 @@ public class CollectionClassifier {
     };
     for(Collection< ?> c : collections)
       System.out.println(classify(c));
+      // just overloading
   }
 }
 ```
 
-이 코드를 실행시키면 Set, List, Unkonw Collection을 순서대로 출력하리라 예상했지만
+이 코드를 실행시키면 Set, List, Unkonwn Collection을 순서대로 출력하리라 예상했지만
+
 Unknown Collection을 3번 출력한다.
+
 overroading 된 method 가운데 어떤것이 호출될지 compile 시점에서 결정된다.
 
-> 오버로딩된 method는 static으로 선택되지만, overring method는 dynamin으로 선택된다.
 
 
 ```
@@ -1997,11 +2025,16 @@ public class Overriding{
 
 
 compile 시점은 항상 Wine 이었지만, 순서대로 wine, sparkling wine, champagne 이 출력된다.
+
 overring 가운데 하나를 선택해도 객체의 컴파일 시점은 아무 영향을 주지 못한다.
 
+
 CollectionClassifier 의 의도는 실행시점의 자료형을 근거로 Overloading된 method 가운데
+
 적절한 것을 자동으로 실행해서 인자의 자료형을 출력하는 것이다.
+
 overloading에선 이러한 역할을 할 수 없으므로, 3개의 method를 합치는게 가장 좋다
+
 
 ```
   public static String classify(Collection< ?> c){
