@@ -2572,6 +2572,10 @@ java 개발자라면 `java.lang`, `java.util` 안에 있는 내용은 어느정�
 
 
 
+Q) 그런데 라이브러리를 구성하는데 필요한 지식 없이 그냥 사용해도 괜찮을까??
+
+celery, redis etc..
+
 ----------------
 
 ### Rule No.48 정확한 답이 필요하다면 float와 double을 피하라
