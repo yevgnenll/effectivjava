@@ -1,4 +1,3 @@
-
 ### Rule No.22 멤버 클래스는 static으로 선언하라
 
 중첩 클래스는 다른 클래스 안에 정의된 class 이다.
@@ -1995,9 +1994,11 @@ Unknown Collection을 3번 출력한다.
 
 overroading 된 method 가운데 어떤것이 호출될지 compile 시점에서 결정된다.
 
+compile 시점에는 Collection 이기 때문에 Collection을 param으로 받는 가장 아래 method가 실행된다.
+
 >overloading된 method는 static으로 선택되지만, overriding 된 method는 동적으로 선택된다.
 
-**무슨소린지 모르겠으니 아래 예제를 확인하면**
+**무슨소린지 모르겠으니 아래 예제 overriding과 비교하면**
 
 
 
@@ -2033,6 +2034,8 @@ compile 시점은 항상 Wine 이었지만, 순서대로 wine, sparkling wine, c
 
 overring 가운데 하나를 선택해도 객체의 컴파일 시점은 아무 영향을 주지 못한다.
 
+(즉 overring은 runtime 시점에 선택을 한다)
+
 
 CollectionClassifier 의 의도는 실행시점의 자료형을 근거로 Overloading된 method 가운데
 
@@ -2059,6 +2062,8 @@ overloading에선 이러한 역할을 할 수 없으므로, 3개의 method를 �
 overriding이 일반적이라면 overloading은 예외에 해당하고, overring method 호출이 어떻게
 
 처리되는가는 예측에 부합한다. 오버로딩은 이런 예측에 혼란을 준다.
+
+혼란을 주는 코드를 작성하는것은 좋지 않다.(API 라면 더욱!!)
 
 
 
@@ -2128,12 +2133,28 @@ generic과 자동 객체화(auto boxing)이 도입되면서 이러한 문제가 
 
 overloading을 할때 주의해서 사용해야 한다.
 
+`remove(E)`와 `removce(int)` 라는 오버로딩 method 두 개가 존재한다.
+
+generic이 도입되면서 List 인터페이스에 `remove(E)` 대신 `removce(Object)`가 있었다.
+
+Object와 int는 다른 자료형이기 때문에 문제될 것이 없었지만 E와 int가 **완전히 다르다**라고 할 순 없다.
+
+
+즉, 자동 객체화, generic이 자바로 포함되었으니 overloading 할 때 주의해야 한다.
+
+서로 형변환이 될 수 없는 자료형이 많다, 하지만 어떤 overloading method가 주어진 인자들을
+
+처리하도록 선택될지 알 수 없다.
+
+
 
 
 
 결론적으로 param의 갯수가 같은 함수에 대해서는 overloading을 최대한 피해야한다.
 
 생성자라면 이 규칙을 따를 수 없겠지만, 형변환만 추가하면서 여러개를 만드는것을 피해야한다.
+
+
 
 
 
@@ -2198,22 +2219,37 @@ static int min(int firstArg, int... remainingArgs){
 List<String> numbers = Arrays.asList("to", "too", "two");
 ```
 
-이렇게 한 것은 큰 실수였다. java 1.5 이전에 배열 내용을 **출력** 하기위해
+처음에 이렇게 한 것은 큰 실수였다. java 1.5 이전에 배열 내용을 **출력** 하기위해
 
 ```
 System.out.println(Arrays.asList(myArray));
 ```
 
-코드를 이렇게 만들었을 경우 [Ljava.lang.Integer;@343534] 와 같이 출력된다.(출력도 안되었다고 함)
+코드를 이렇게 만들었을 경우 [Ljava.lang.Integer;@343534] 와 같이 출력된다.
 
-java 1.5부터는 Array 클래스에는 varargs를 받는 method로 바꾼다는 결정을 내렸기 때문에
+그런데 이 숙어는 object reference type에 대해서만 동작했고, primitive type 배열에 적용하면
+
+컴파일 조차도 되지 않았다.
+
+
+```
+public static void main(String[] args){
+	int[] digits = { 3, 1, 4, 1, 5, 9, 2, 6, 5, 4};
+    System.out.println(Arrays.asList(digits));
+}
+```
+
+이 코드를 컴파일 하려고하면 java 1.4에서 asList 부분에 에러가 났었다.
+
+
+그러나 java 1.5부터 Array.asList를 varargs를 받는 method로 바꾼다는 결정을 내렸기 때문에
 
 오류없이 compile이 가능하고, 출력되는 결과값도 예측한대로 나타난다.
 
 
-`Arrays.asList` 함수는 객체 참조를 모아 배열로 만든다(실제 데이터가 아닌 참조값)
+개선(?) 된 `Arrays.asList` 함수는 **객체 참조**를 모아 **배열**로 만드는데,
 
-int 배열 digits에 대한 참조가 담긴 길이 1 짜리 배열, 배열의 배열이 만들어진다
+int 배열 digits에 대한 참조가 담긴 길이 1짜리 배열, 즉 배열의 배열이 만들어진다.
 
 `List<int[]>` 이 리스트에 `toString`을 호출하면 다시 int 배열의 toString이 호출되어
 
