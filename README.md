@@ -1971,12 +1971,12 @@ public class CollectionClassifier {
   public static String classify(List<?> lst){
     return "List";
   }
-  public static String classify(Collection<?> c){
+  public static String classify(Collection< ?> c){
     return "unknown collection";
   }
 
   public static void main(String[] args){
-    Collection<?>[] collections = {
+    Collection< ?>[] collections = {
         new HashSet<String>(),
         new ArrayList<BigInteger>(),
         new HashMap<String, String>().values()
@@ -1993,6 +1993,10 @@ public class CollectionClassifier {
 Unknown Collection을 3번 출력한다.
 
 overroading 된 method 가운데 어떤것이 호출될지 compile 시점에서 결정된다.
+
+>overloading된 method는 static으로 선택되지만, overriding 된 method는 동적으로 선택된다.
+
+**무슨소린지 모르겠으니 아래 예제를 확인하면**
 
 
 
@@ -2031,7 +2035,15 @@ overring 가운데 하나를 선택해도 객체의 컴파일 시점은 아무 �
 
 CollectionClassifier 의 의도는 실행시점의 자료형을 근거로 Overloading된 method 가운데
 
-적절한 것을 자동으로 실행해서 인자의 자료형을 출력하는 것이다.
+적절한 것을 **자동**으로 실행해서 인자의 자료형을 출력하는 것이다.
+
+`classify` 라는 method는 `CollectionClassifier`라는 class 안에 여러개 정의되어 있고
+
+구분할 수 있는것이 parameter의 type밖에 없으므로 알맞은 param type을 체크하였기 때문에
+
+collection param이 들어왔을때 결과인 "Unknown colection"이 나오는것이다.
+
+
 
 overloading에선 이러한 역할을 할 수 없으므로, 3개의 method를 합치는게 가장 좋다
 
@@ -2044,7 +2056,9 @@ overloading에선 이러한 역할을 할 수 없으므로, 3개의 method를 �
 ```
 
 overriding이 일반적이라면 overloading은 예외에 해당하고, overring method 호출이 어떻게
-처리되는가는 예측에 부합한다. 오버로딩은 이런 예측에 혼란을 준다.
+
+처리되는가는 예측에 부합한다. 오버로딩은 이런 예측에 혼란을 준다.\
+
 
 혼란을 피하기 위해서는 같은수의 parameter를 갖는 두개의 overloading method를 API에 포함하지 않는것이다.
 
