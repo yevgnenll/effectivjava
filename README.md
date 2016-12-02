@@ -1,3 +1,4 @@
+
 ### Rule No.22 멤버 클래스는 static으로 선언하라
 
 중첩 클래스는 다른 클래스 안에 정의된 class 이다.
@@ -2571,17 +2572,16 @@ java 개발자라면 `java.lang`, `java.util` 안에 있는 내용은 어느정�
 최대한 라이브러리를 뒤져보면서 필요한 기능을 찾아 구현해라
 
 
-
 Q) 그런데 라이브러리를 구성하는데 필요한 지식 없이 그냥 사용해도 괜찮을까??
 
-celery, redis etc..
+
 
 ----------------
 
 ### Rule No.48 정확한 답이 필요하다면 float와 double을 피하라
 
 
-float, double은 과학, engineering 연산을 위해 설계된 자료형이다.
+float, double은 과학, engineering 연산을 위해 설계도니 자료형이다.
 
 부동 소주점 연산을 수행하는데 넓은 범위의 값에 대해 정확도 높은 **근사치**를 제공하기 위해 설계되었다.
 
@@ -2614,11 +2614,6 @@ float, double은 과학, engineering 연산을 위해 설계된 자료형이다.
 
 
 `compare`: 첫 인자의 값이 두 번째 인자의 값보다 작을때, 같을때, 클때 -> 음, 0, 양
-`compare(first, second)`
-
-`first < second ` -> true +
-`first == second` -> 0
-`first > second` -> -
 
 
 ```
@@ -2697,3 +2692,68 @@ i가 int가 아니라 `Integer`이기 때문이다
 객체화된 기본 자료형과 기본본 자료형을 한 표현식에서 사용하면 비객체화가 자동으로 일어나며
 
 그 과정에서 `NullPointerException`이 발생한다
+
+
+
+----------------
+
+### Rule No.50 다른 자료형이 적절하다면 문자열은 피하라
+
+목적: 문자열로 하면 **안되는** 일들
+
+1. 문자열은 value type을 대신하기엔 부족하다
+	- 숫자라면 int, float, BigInteger 같은 수 자료형으로 변환해야한다.
+	- yes on no로 답변이 가능하면 boolean을 사용한다.
+	- 적절한 자료형이 있다면 해당 자료형을 사용하자
+	- 적당한 자료형이 없다면 새로 만들어야 한다.
+2. 문자열은 enum을 대신하기엔 부족하다
+	- `enum`은 문자열 보다 훨씬 좋은 열거 할 수 있는 자료형이다.
+3. 문자열은 혼합 자료형을 대신하기엔 부족하다
+	- 다양한 컴포턴트를 문자열로 표시하는건 좋은 생각이 아니다
+	- `String compondKey = className + "#" + i.next();` nonono
+		- parsing이 필요하다
+		- 느리다
+		- 오류 발생 가능성이 굉장히 높다
+4. 문자열은 capability(권한)을 표현하기에 부족하다
+
+4번의 설명
+
+(java 1.2를 기준으로) thread의 지역변수를 식별하는데 string을 사용했다.
+
+```
+// 문자열을 권한으로 사용하는 잘못되 예제
+public class ThreadLocal{
+    private ThreadLocal(){}
+
+    // 주어진 이름이 가리키는 thread 지연 변수 값 설정
+    public static void set(String key, Object value);
+
+    // 주어진 이름이 가리키는 thread 지연 변수의 값
+    public static Object get(String key);
+}
+```
+
+문자열이 thread 지역변수의 전역적인 이름공간 이라는 것이다(?)
+
+위 코드가 성립하려면
+
+1. 문자열 키의 유일성이 보장되어야 한다.
+2. 두 클라이언트가 같은 지역변수명을 사용한다면 동일한 변수를 공유하여 오류를 낸다
+3. 악의적인 클라이언트가 의도적으로 같은 문자열을 사용하면 데이터 접근이 가능하다
+
+```
+public class ThreadLocal {
+  private ThreadLocal(){}
+
+  public static class Key{
+    Key(){}
+  }
+  public static Key getKey(){
+    return new Key();
+  }
+  public static void set(Key key, Object value){}
+  public static Object get(Key key){ return null; }
+}
+```
+
+키는 더 이상 thread 지역 변수의 키가 아니라, 자체 thread의 지역 변수가 된다.
