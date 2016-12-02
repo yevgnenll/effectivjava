@@ -2057,7 +2057,8 @@ overloading에선 이러한 역할을 할 수 없으므로, 3개의 method를 �
 
 overriding이 일반적이라면 overloading은 예외에 해당하고, overring method 호출이 어떻게
 
-처리되는가는 예측에 부합한다. 오버로딩은 이런 예측에 혼란을 준다.\
+처리되는가는 예측에 부합한다. 오버로딩은 이런 예측에 혼란을 준다.
+
 
 
 혼란을 피하기 위해서는 같은수의 parameter를 갖는 두개의 overloading method를 API에 포함하지 않는것이다.
@@ -2068,7 +2069,7 @@ overriding이 일반적이라면 overloading은 예외에 해당하고, overring
 
 **생성자**의 경우는 method 이름을 바꾸는것이 불가능하므로 static factory method를 사용하는게 방법이 될 수 있다.
 그리고 **생성자**는 이러한 매커니즘을 신경쓰지 않아도 되는것이, param type이 다르다면 충분히 논리적으로 사용이 가능하다.
-또한 형변환 할 수 없게 만들어도 도니다.
+또한 형변환 할 수 없게 만들어도 된다.
 
 
 ```
@@ -2098,23 +2099,41 @@ public class SetList {
 ```
 
 이 코드는 -3, -2, -1, 0, 1, 2 를 `Set`, `List`에 넣는 작업을 한다
+
 그리고 remove를 똑같이 3번 호출하여 [-3, -2, 1] [-3, -2, 1] 이 나오는걸 생각하지만
+
 실제로는 [-3, -2, -1] [-2, 0, 2]가 출력된다.
 
+
+
+
 `set.remove(i)`는 재정의 된 `remove(E)`가 호출된다. 의도한대로 동작한다
+
 그런데 `list.removce(i)` 호출 결과가 `remove(int i)`이다.
+
 저장된 **위치**에 있는 원소를 제거한다. 따라서 [-2, 0, 2]가 출력된다
+
+
 
 ```
 list.remove((Integer) i);
 ```
 로 수정해주면 원래 원하는 값으로 나오는데,
-이렇게 되는 이유는 List의 interface에 `remove(E)`와 `remoce(Object)`가 둘 다 있기 때문이다.
+
+
+이렇게 되는 이유는 List의 interface에 `remove(E)`와 `remoce(Object)`가 **둘 다 있기 때문이다.**
+
 generic과 자동 객체화(auto boxing)이 도입되면서 이러한 문제가 발생한 것이기 때문에
+
 overloading을 할때 주의해서 사용해야 한다.
 
+
+
+
 결론적으로 param의 갯수가 같은 함수에 대해서는 overloading을 최대한 피해야한다.
+
 생성자라면 이 규칙을 따를 수 없겠지만, 형변환만 추가하면서 여러개를 만드는것을 피해야한다.
+
 
 
 
@@ -2132,7 +2151,9 @@ static int sum(int... args){
 ```
 
 이렇게 함수를 만들면 args에는 0개 이상의 인자가 들어올 수 있다.
+
 하지만, 반드시 1개 이상의 인자가 필요할 때가 있다.
+
 
 ```
 static int mint(int... args){
@@ -2147,8 +2168,11 @@ static int mint(int... args){
 ```
 
 이렇게 하여 0개도 안들어왔을 경우 exception을 처리하는것인데 올바른 코드가 아니다
+
 이런 경우는 인자를 2개 받도록 만드는것이 최선이다.
-왜냐하면 인자없이 method를 호출하는것이 가능할 뿐 아니라 실행 도중에 exception이 나오기 때문이다.
+
+왜냐하면 **인자없이** method를 **호출**하는것이 가능할 뿐 아니라 실행 도중에 exception이 나오기 때문이다.(최악)
+
 
 ```
 static int min(int firstArg, int... remainingArgs){
@@ -2162,26 +2186,78 @@ static int min(int firstArg, int... remainingArgs){
 ```
 
 현재 이렇게 임의의 갯수의 parameter를 사용할때 varagrs를 사용한다.
+
 `printf`가 그 예시이다.
+
+
 
 물론 이 방법이 항상 좋은것은 아니다.
 
 ```
 List<String> numbers = Arrays.asList("to", "too", "two");
 ```
-코드를 이렇게 만들었을 경우 [Ljava.lang.Integer;@343534] 와 같은 값이 나오는데
-java 1.5부터는 Array 클래스에는 어떤 자료형의 배열이라도 문자열로 변환할 수 있는 Array.toString이 만들어졌다.
+
+이렇게 한 것은 큰 실수였다. java 1.5 이전에 배열 내용을 **출력** 하기위해
+
+```
+System.out.println(Arrays.asList(myArray));
+```
+
+코드를 이렇게 만들었을 경우 [Ljava.lang.Integer;@343534] 와 같이 출력된다.(출력도 안되었다고 함)
+
+java 1.5부터는 Array 클래스에는 varargs를 받는 method로 바꾼다는 결정을 내렸기 때문에
+
+오류없이 compile이 가능하고, 출력되는 결과값도 예측한대로 나타난다.
+
+
+`Arrays.asList` 함수는 객체 참조를 모아 배열로 만든다(실제 데이터가 아닌 참조값)
+
+int 배열 digits에 대한 참조가 담긴 길이 1 짜리 배열, 배열의 배열이 만들어진다
+
+`List<int[]>` 이 리스트에 `toString`을 호출하면 다시 int 배열의 toString이 호출되어
+
+원하는 문자열이 만들어진다.
+
+
 
 > 마지막 인자가 배열이라고 해서 무조건 수정할 필요는 없다., varargs는 임의 개수의 인자를 처리할 수 있는 method를 만들어야 할 때만 사용한다.
 
-성능이 중요한 상황이라면 `varargs`를 사용하는데 있어서 더욱 신중해야한다.
+
+
+그러니깐 varagrs의를 사용할때 정말 주의해야 하는것은
+
+```
+RerturnType1 suspect1(Object... args){}
+<T> ReturnType2 suspect2(T... args){}
+```
+
+아무 인자 리스트나 받을 수 있는 method들은 compile 시점에서 자료형 검사가 불가능하다.
+
+따라서 성능이 중요한 상황이라면 `varargs`를 사용하는데 있어서 더욱 신중해야한다.
+
 오버헤드를 감당할 수 없을 상황이면 다른 패턴을 사용하는것도 좋다
+
+
+예를들면 overloading이다
+
+```
+public void foo(){}
+public void foo(int a1){}
+public void foo(int a1, int a2){}
+public void foo(int a1, int a2, int a3){}
+public void foo(int a1, int a2, int a3, int... rest){}
+```
+
+varargs method는 인자 개수가 **가변적인** method를 정의할때 편리하지만 사용을 신중히 해야한다.
+
 
 
 
 --------------------------
 
 ### Rule No.43 null 대신 빈 배열이나 collection을 반환하라
+
+**와 이건 진짜 대박**
 
 ```
 public Cheese[] getCheeses(){
@@ -2541,3 +2617,4 @@ i가 int가 아니라 `Integer`이기 때문이다
 
 객체화된 기본 자료형과 기본본 자료형을 한 표현식에서 사용하면 비객체화가 자동으로 이러나며
 그 과정에서 `NullPointerException`이 발생한다
+
