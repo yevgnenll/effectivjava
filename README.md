@@ -2270,7 +2270,7 @@ public Cheese[] getCheeses(){
 
 ```
 Cheese[] cheese = shop.getcheese();
-if(chsses != null &&
+if(chsses != null && //null 체크
 	Arrays.asList(cheeses).contains(Cheese.STILTON))
     System.out.println("Jolly good, just the thing.");
 ```
@@ -2283,12 +2283,16 @@ if(Arrays.asList(cheeses).contains(Cheese.STILTON))
 ```
 
 이렇게 간단하게 처리할 수 있다. `null`은 오류를 수반하기가 쉽다.
+
 `null`에 관한 처리를 잊을 수도 있기 때문에 권장하지 않는다.
+
+
 
 null을 반환하는것이 배열을 반환하는거 보다 가볍고 메모리에 대한 리소스를 덜 차지 하지 않는가? 라는 질문을 할 수 있다.
 
 1. 해당 method가 성능 저하의 주범이라는것이 밝혀지지 않는 한, 이 수준까지의 질문은 바람직하지 않다.
 2. 길이가 0인 배열은 immutable 이므로 아무 제약없이 사용할 수 있다.
+3.
 
 ```
 private final List<Cheese> cheesesInStock = ...;
@@ -2300,7 +2304,9 @@ public Cheese[] getCheeses(){
 ```
 
 `toArray`에 전달되는 빈상수는 반환하는 값의 자료형을 명시하는 역할을 한다.
+
 `toArray`는 반환되는 원소가 담긴 배열을 스스로 할당하는데, collection이 비어있는 경우에는
+
 인자로 주어진 배열을 사용한다.
 
 
@@ -2321,24 +2327,38 @@ null 대신 빈 배열이나 빈 collection을 반환하라
 ### Rule No.44 모든 API 요소에 문서화 주석을 달아라
 
 사용할 수 있는 API의 조건은 문서가 있어야한다. java는 javadoc 이라는 유틸이 포함되어 있어서
+
 API 문서작업을 쉽게 할 수 있다.
 
+
 문법같은것이 정해져있는 것은 아니지만, 배워야하고 어느정도 표준화되어 있다.
+
 오라클에는 [How to Write Doc Comments](http://www.oracle.com/technetwork/articles/java/index-137868.html) 라는 문서가 설명되어 있다.
+
 
 좋은 API 문서는 class, interface, constructor, method, field에 문서화 주석을 달아야 한다.
 
+
 상속을 고려한 method가 아니라면 어떻게 그 일을 하는지 설명해서는 안된다.
+
 그리고 **선행조건**과 **후행조건**을 나열해야 한다.
 
+
 선행조건: 클라이언트가 method를 호출하려면 `true` 가 되어야하는 조건들
+
 보통 `@throws` 태그를 통해 암묵적으로 기술함
+
 관계된 인자는 `@param` 태그를 통해 명시함
 
+
 그리고 **side effect**에 대해서도 문서화 해야한다.
+
 background thread를 실행한다면 그 사실이 명시화 되어야하고, thread safety에 대해서도 남겨야한다.
+
 void가 아니라면 `@return`도 필수이다.
+
 예외처리에 대해서는 모두 `@throws` 태그도 붙여야 한다.
+
 
 
 ```
@@ -2358,11 +2378,15 @@ void가 아니라면 `@return`도 필수이다.
 ```
 
 javadoc 유틸리는 문서화 주석을 HTML 문서로 변환해준다.
+
 `{@code}` 태그가 사용한은 코드 폰트로 나타내기 위한것이다.
+
 코드가 여러줄일 경우엔 `<pre></pre>` 태그안에 넣으면 된다.
 
 
+
 {@literal} 태그는 <, >,& 와 같은 문자들을 주석의 일부로 사용할때 편리하다
+
 
 1. 최대한 javadoc으로 변환한 결과물의 가독성을 우선시해야한다.
 2. 마침표가 여러번 오는경우도 주의해야 한다. 마침표 이후 첫 줄까지는 문장의 끝으로 간주한다
@@ -2617,4 +2641,3 @@ i가 int가 아니라 `Integer`이기 때문이다
 
 객체화된 기본 자료형과 기본본 자료형을 한 표현식에서 사용하면 비객체화가 자동으로 이러나며
 그 과정에서 `NullPointerException`이 발생한다
-
