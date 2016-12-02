@@ -2255,6 +2255,11 @@ int 배열 digits에 대한 참조가 담긴 길이 1짜리 배열, 즉 배열�
 
 원하는 문자열이 만들어진다.
 
+```
+System.out.println(Arrays.toString(myArray));
+```
+
+
 
 
 > 마지막 인자가 배열이라고 해서 무조건 수정할 필요는 없다., varargs는 임의 개수의 인자를 처리할 수 있는 method를 만들어야 할 때만 사용한다.
